@@ -1,0 +1,51 @@
+{
+  "accounts": {
+    "binance": {
+      "name": "币安官方",
+      "username": "binance"
+    },
+    "cz_binance": {
+      "name": "CZ 赵长鹏",
+      "username": "cz_binance"
+    },
+    "BinanceResearch": {
+      "name": "币安研究",
+      "username": "BinanceResearch"
+    },
+    "BinanceFutures": {
+      "name": "币安合约",
+      "username": "BinanceFutures"
+    },
+    "BinanceLabs": {
+      "name": "币安实验室",
+      "username": "BinanceLabs"
+    },
+    "BNBCHAIN": {
+      "name": "BNB链",
+      "username": "BNBCHAIN"
+    },
+    "heyibinance": {
+      "name": "何一",
+      "username": "heyibinance"
+    },
+    "BinanceHelpDesk": {
+      "name": "币安帮助",
+      "username": "BinanceHelpDesk"
+    },
+    "BinanceSquare": {
+      "name": "币安广场",
+      "username": "BinanceSquare"
+    }
+  },
+  "alpha_keywords": [
+    "airdrop", "空投", "listing", "上线", "launchpool",
+    "launchpad", "new listing", "new token", "new coin",
+    "alpha signal", "upcoming", "announced", "即将上线",
+    "deposit", "充值通道", "withdrawal", "BNB",
+    "mega drop", "megadrop", "holder airdrop", "holder空投",
+    "farming", "staking", "质押挖矿", "新币挖矿",
+    "HODLer airdrop", "alpha", "Launchpool"
+  ],
+  "check_interval_minutes": 10,
+  "max_tweets_per_account": 20
+}

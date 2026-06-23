@@ -1,0 +1,83 @@
+name: Binance Twitter Alpha Monitor
+
+on:
+  schedule:
+    # Every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    # Allow manual trigger
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      actions: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      
+      - name: Install dependencies
+        run: |
+          npm init -y
+          npm install playwright
+      
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium
+      
+      - name: Run monitor
+        id: monitor
+        run: |
+          node monitor.js
+          echo "has_new=$(jq '. | length' data/new_alpha_tweets.json)" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push updates
+        run: |
+          git config --local user.email "monitor-bot@binance-alpha-bot"
+          git config --local user.name "Binance Alpha Bot"
+          
+          # Check if there are changes to commit
+          if [[ -n $(git status --porcelain) ]]; then
+            git add data/
+            git commit -m "chore: update tweet database [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+            git push
+            echo "Updates committed and pushed"
+          else
+            echo "No changes to commit"
+          fi
+      
+      - name: Send webhook notification (if new alpha found)
+        if: steps.monitor.outputs.has_new != '0'
+        env:
+          WEBHOOK_URL: ${{ secrets.ALPHA_WEBHOOK_URL || '' }}
+          ALPHA_DATA: ${{ toJSON(fromJSON(steps.monitor.outputs.has_new)) }}
+        run: |
+          ALPHA_COUNT=$(jq '. | length' data/new_alpha_tweets.json)
+          echo "Found $ALPHA_COUNT new alpha tweets!"
+          
+          # If webhook URL is configured, send notification
+          if [ -n "$WEBHOOK_URL" ]; then
+            curl -s -X POST "$WEBHOOK_URL" \
+              -H "Content-Type: application/json" \
+              -d @data/new_alpha_tweets.json
+            echo "Webhook sent"
+          fi
