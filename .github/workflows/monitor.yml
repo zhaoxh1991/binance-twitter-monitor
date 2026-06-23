@@ -1,0 +1,45 @@
+name: Binance Square Alpha Monitor
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright
+          npx playwright install chromium
+      
+      - name: Run monitor
+        run: node monitor.js
+        timeout-minutes: 8
+      
+      - name: Check results and commit
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git config --local user.email "bot@square-monitor"
+            git config --local user.name "Square Monitor Bot"
+            git add -A
+            git commit -m "chore: update [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+            git push
+          else
+            echo "No changes to commit"
+          fi
